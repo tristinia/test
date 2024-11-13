@@ -1,14 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API 호출 예제</title>
-    <link rel="stylesheet" href="style.css">
+    <title>API 호출 예시</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-    <button id="fetchDataBtn">API 데이터 가져오기</button>
+
+    <h1>API 호출 예시</h1>
+    <button id="fetchDataButton">API 호출</button>
     <div id="result"></div>
-    <script type="module" src="script.js"></script> <!-- main script 파일 -->
+
+    <!-- 모듈화된 API 호출 코드 -->
+    <script type="module">
+        import { fetchData } from './api.js';
+
+        document.getElementById('fetchDataButton').addEventListener('click', fetchData);
+    </script>
+    
 </body>
 </html>
