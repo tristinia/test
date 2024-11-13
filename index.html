@@ -1,14 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API 호출 예제</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <button id="fetchDataBtn">API 데이터 가져오기</button>
-    <div id="result"></div>
-    <script type="module" src="script.js"></script> <!-- main script 파일 -->
-</body>
-</html>
+// api.js
+
+export async function fetchData() {
+    const apiKey = process.env.API_KEY;  // Vercel에서 설정한 API_KEY를 가져옴
+    const url = `https://open.api.nexon.com/mabinogi/v1/npcshop/list?npc_name=%EB%8D%B0%EC%9C%84&server_name=%EC%9A%B8%ED%94%84&channel=1`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'accept': 'application/json',
+                'x-nxopen-api-key': apiKey  // 환경 변수로부터 API 키 사용
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('API 요청 실패');
+        }
+
+        // JSON 응답을 파싱
+        const data = await response.json();
+
+        // API 호출에 성공했으면, JSON 데이터를 포맷하여 화면에 출력
+        document.getElementById('result').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    } catch (error) {
+        // 오류 발생 시, 오류 메시지 출력
+        document.getElementById('result').innerHTML = `오류: ${error.message}`;
+    }
+}
