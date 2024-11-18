@@ -7,7 +7,132 @@
     <style>
         body { font-family: Arial, sans-serif; }
         #result { margin-top: 20px; }
+        #logs { margin-top: 20px; white-space: pre-wrap; }<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Decoder</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #result { margin-top: 20px; }
         #logs { margin-top: 20px; white-space: pre-wrap; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Color Decoder</h1>
+    <input type="text" id="colorQuery" placeholder="16진수 문자열 입력" />
+    <button id="decodeButton">디코드</button>
+    <div id="result"></div>
+    <div id="logs"></div>
+
+    <script>
+        const patternToXorbit = {
+            "0": 0b1010,
+            "1": 0b0101,
+            "2": 0b1111,
+            "3": 0b0010,
+            "4": 0b1011,
+            "5": 0b0111,
+            "6": 0b1110,
+            "7": 0b0001,
+        };
+
+        function bitXor(a, b) {
+            return a ^ b;
+        }
+
+        function handleOnly0to9Xor(value, xorBit) {
+            let result = value - 65;
+            let counter = 0;
+            while (bitXor(result, xorBit) > 9) {
+                result -= 16;
+                counter++;
+                if (result < 0) return null;
+            }
+            return bitXor(result, xorBit) + counter * 9;
+        }
+
+        function splitStringIntoList(string) {
+            return Array.from({length: string.length / 2}, (_, i) => parseInt(string.substr(i * 2, 2), 16));
+        }
+
+        function decodeInSequence(encodedLst) {
+            return encodedLst.map((color, idx) =>
+                handleOnly0to9Xor(color, patternToXorbit[idx % 8])
+            );
+        }
+
+        function splitList(lst) {
+            return lst.reduce((acc, curr) => {
+                if (curr !== null) {
+                    if (!acc[acc.length - 1] || acc[acc.length - 1][0] === null) {
+                        acc.push([curr]);
+                    } else {
+                        acc[acc.length - 1].push(curr);
+                    }
+                }
+                return acc;
+            }, []);
+        }
+
+        function combineElements(lst) {
+            return lst
+                .filter((_, i) => i % 2 === 0)
+                .map((_, i) => lst[i * 2] * 16 + lst[i * 2 + 1]);
+        }
+
+        function applyToNestedList(lst, func) {
+            return lst.map(func);
+        }
+
+        function toColorDict(lst) {
+            return Object.fromEntries(lst.map(ele => [ele[0], ele.slice(1)]));
+        }
+
+        function decodeGivenColorQuery(colorQuery) {
+            const splitListResult = splitList(decodeInSequence(splitStringIntoList(colorQuery)));
+            const combinedElements = applyToNestedList(splitListResult, combineElements);
+            return toColorDict(combinedElements);
+        }
+
+        function displayResult(message) {
+            const logsDiv = document.getElementById('logs');
+            logsDiv.innerText += message + '\n';
+        }
+
+        document.getElementById('decodeButton').addEventListener('click', () => {
+            const colorQuery = document.getElementById('colorQuery').value;
+            const result = decodeGivenColorQuery(colorQuery);
+            document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+        });
+
+        // 각 함수에 대한 버튼 생성
+        const testFunctions = [
+            { func: splitStringIntoList, args: ["A0B1C2"], name: "splitStringIntoList" },
+            { func: decodeInSequence, args: [[160, 177, 194]], name: "decodeInSequence" },
+            { func: handleOnly0to9Xor, args: [160, patternToXorbit[0]], name: "handleOnly0to9Xor" },
+            { func: splitList, args: [[1, 2, null, 3, 4]], name: "splitList" },
+            { func: combineElements, args: [[10, 11, 12, 13]], name: "combineElements" },
+            { func: applyToNestedList, args: [[[10, 11], [12, 13]], combineElements], name: "applyToNestedList" },
+            { func: toColorDict, args: [[["red", 255, 0, 0], ["green", 0, 255, 0]]], name: "toColorDict" },
+        ];
+
+        testFunctions.forEach(({ func, args, name }) => {
+            const button = document.createElement('button');
+            button.innerText = `${name} 테스트`;
+            button.addEventListener('click', () => {
+                const result = func(...args);
+                displayResult(`${name}: ${JSON.stringify(result)}`);
+            });
+            document.body.appendChild(button);
+        });
+
+    </script>
+</body>
+</html>
+
     </style>
 </head>
 <body>
