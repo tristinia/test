@@ -4,13 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hex Decoder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
     <h1>16진수 문자열 디코더</h1>
     <input type="text" id="hexInput" placeholder="16진수 문자열 입력">
     <button id="decodeButton">디코드하기</button>
-    <h2>결과:</h2>
-    <pre id="result"></pre>
+    <h2>중간 결과:</h2>
+    <pre id="intermediateResults"></pre>
+    <h2>최종 결과:</h2>
+    <pre id="finalResult"></pre>
 
     <script>
         const pattern_to_xorbit = {
@@ -35,7 +48,7 @@
                 result -= 16;
                 counter++;
                 if (result < 0) {
-                    return "None";
+                    return null;
                 }
             }
             return bit_xor(result, xor_bit) + counter * 9;
@@ -51,11 +64,54 @@
             });
         }
 
+        function split_list(lst) {
+            return lst.reduce((acc, curr) => {
+                if (curr !== null) {
+                    if (!acc.length || acc[acc.length - 1][0] === null) {
+                        acc.push([curr]);
+                    } else {
+                        acc[acc.length - 1].push(curr);
+                    }
+                } else {
+                    acc.push([null]);
+                }
+                return acc;
+            }, []).filter(group => group[0] !== null);
+        }
+
+        function combine_elements(lst) {
+            return lst.reduce((acc, curr, idx) => {
+                if (idx % 2 === 0 && idx + 1 < lst.length) {
+                    acc.push(curr * 16 + lst[idx + 1]);
+                }
+                return acc;
+            }, []);
+        }
+
+        function apply_to_nested_list(lst, func) {
+            return lst.map(func);
+        }
+
+        function to_color_dict(lst) {
+            return Object.fromEntries(lst.map(ele => [ele[0], ele.slice(1)]));
+        }
+
+        function decode_given_color_query(color_query) {
+            const splitListResult = split_list(decode_in_sequence(split_string_into_list(color_query)));
+            const applyToNestedResult = apply_to_nested_list(splitListResult, combine_elements);
+            const finalResult = to_color_dict(applyToNestedResult);
+            return { splitListResult, applyToNestedResult, finalResult };
+        }
+
         document.getElementById('decodeButton').addEventListener('click', () => {
             const hexString = document.getElementById('hexInput').value;
-            const encodedList = split_string_into_list(hexString);
-            const result = decode_in_sequence(encodedList);
-            document.getElementById('result').textContent = JSON.stringify(result);
+            const { splitListResult, applyToNestedResult, finalResult } = decode_given_color_query(hexString);
+
+            document.getElementById('intermediateResults').textContent = `
+                Split List Result: ${JSON.stringify(splitListResult)},
+                Apply To Nested Result: ${JSON.stringify(applyToNestedResult)}
+            `;
+            document.getElementById('finalResult').textContent = JSON.stringify(finalResult);
         });
     </script>
 </body>
