@@ -3,76 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API 호출 예시</title>
+    <title>Color Decoder</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f9;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #result {
-            margin-top: 20px;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        .error {
-            color: red;
-        }
+        body { font-family: Arial, sans-serif; }
+        #result { margin-top: 20px; }
     </style>
 </head>
 <body>
-
-    <h1>API 호출 예시</h1>
-    <button id="fetchDataButton">API 호출</button>
+    <h1>Color Decoder</h1>
+    <input type="text" id="colorQuery" placeholder="16진수 문자열 입력" />
+    <button id="decodeButton">디코드</button>
     <div id="result"></div>
 
-    <!-- 모듈화된 API 호출 코드 -->
-    <script type="module">
-        import { fetchData } from './api.js';
-
-        document.getElementById('fetchDataButton').addEventListener('click', fetchData);
-    </script>
-    
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Key Display</title>
-</head>
-<body>
-    <h1>Vercel 환경 변수</h1>
-    <p id="apiKeyDisplay">Loading...</p>
-    
     <script>
-        // Vercel 환경 변수에서 API 키를 읽어오기
-        const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+        const patternToXorbit = {
+            "0": 0b1010,
+            "1": 0b0101,
+            "2": 0b1111,
+            "3": 0b0010,
+            "4": 0b1011,
+            "5": 0b0111,
+            "6": 0b1110,
+            "7": 0b0001,
+        };
 
-        if (apiKey) {
-            document.getElementById('apiKeyDisplay').innerText = `API Key: ${apiKey}`;
-        } else {
-            document.getElementById('apiKeyDisplay').innerText = 'API Key is not set!';
+        function bitXor(a, b) {
+            return a ^ b;
         }
+
+        function handleOnly0to9Xor(value, xorBit) {
+            let result = value - 65;
+            let counter = 0;
+            while (bitXor(result, xorBit) > 9) {
+                result -= 16;
+                counter++;
+                if (result < 0) return null;
+            }
+            return bitXor(result, xorBit) + counter * 9;
+        }
+
+        function splitStringIntoList(string) {
+            return Array.from({length: string.length / 2}, (_, i) => parseInt(string.substr(i * 2, 2), 16));
+        }
+
+        function decodeInSequence(encodedLst) {
+            return encodedLst.map((color, idx) =>
+                handleOnly0to9Xor(color, patternToXorbit[idx % 8])
+            );
+        }
+
+        function splitList(lst) {
+            return lst.reduce((acc, curr) => {
+                if (curr !== null) {
+                    if (!acc[acc.length - 1] || acc[acc.length - 1][0] === null) {
+                        acc.push([curr]);
+                    } else {
+                        acc[acc.length - 1].push(curr);
+                    }
+                }
+                return acc;
+            }, []);
+        }
+
+        function combineElements(lst) {
+            return lst
+                .filter((_, i) => i % 2 === 0)
+                .map((_, i) => lst[i * 2] * 16 + lst[i * 2 + 1]);
+        }
+
+        function applyToNestedList(lst, func) {
+            return lst.map(func);
+        }
+
+        function toColorDict(lst) {
+            return Object.fromEntries(lst.map(ele => [ele[0], ele.slice(1)]));
+        }
+
+        function decodeGivenColorQuery(colorQuery) {
+            const splitListResult = splitList(decodeInSequence(splitStringIntoList(colorQuery)));
+            const combinedElements = applyToNestedList(splitListResult, combineElements);
+            return toColorDict(combinedElements);
+        }
+
+        document.getElementById('decodeButton').addEventListener('click', () => {
+            const colorQuery = document.getElementById('colorQuery').value;
+            const result = decodeGivenColorQuery(colorQuery);
+            document.getElementById('result').innerText = JSON.stringify(result, null, 2);
+        });
     </script>
 </body>
 </html>
