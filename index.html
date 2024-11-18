@@ -3,25 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hex String Splitter</title>
+    <title>Sequence Decoder</title>
     <script>
-        function splitStringIntoList() {
+        // XOR 연산을 수행하는 함수
+        function handleOnly0to9Xor(color, pattern) {
+            return (parseInt(color) ^ pattern) % 10; // XOR 후 0-9 범위로 제한
+        }
+
+        // 주어진 패턴 정의
+        const patternToXorbit = {
+            "0": 0b1010,
+            "1": 0b0101,
+            "2": 0b1111,
+            "3": 0b0010,
+            "4": 0b1011,
+            "5": 0b0111,
+            "6": 0b1110,
+            "7": 0b0001,
+        };
+
+        // 주어진 색상 리스트를 디코딩하는 함수
+        function decodeInSequence(encodedLst) {
+            return encodedLst.map((color, idx) => {
+                return handleOnly0to9Xor(color, patternToXorbit[(idx % 8).toString()]);
+            });
+        }
+
+        // 입력을 처리하고 결과를 출력하는 함수
+        function processInput() {
             const input = document.getElementById("input").value;
-            const result = [];
-
-            for (let i = 0; i < input.length; i += 2) {
-                const hexPair = input.slice(i, i + 2);
-                result.push(parseInt(hexPair, 16));
-            }
-
+            const encodedLst = input.split(",").map(item => item.trim());
+            const result = decodeInSequence(encodedLst);
             document.getElementById("output").innerText = JSON.stringify(result, null, 2);
         }
     </script>
 </head>
 <body>
-    <h1>Hex String Splitter</h1>
-    <textarea id="input" rows="4" cols="30" placeholder="예: 1A2B3C"></textarea><br>
-    <button onclick="splitStringIntoList()">제출</button>
+    <h1>Sequence Decoder</h1>
+    <textarea id="input" rows="4" cols="30" placeholder="예: 0, 1, 2, 3, 4, 5, 6, 7"></textarea><br>
+    <button onclick="processInput()">제출</button>
     <h2>결과:</h2>
     <pre id="output"></pre>
 </body>
