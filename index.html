@@ -87,22 +87,37 @@
             return toColorDict(combinedElements);
         }
 
+        function displayResult(message) {
+            const logsDiv = document.getElementById('logs');
+            logsDiv.innerText += message + '\n';
+        }
+
+        // 각 함수 테스트 버튼 추가
         document.getElementById('decodeButton').addEventListener('click', () => {
             const colorQuery = document.getElementById('colorQuery').value;
             const result = decodeGivenColorQuery(colorQuery);
             document.getElementById('result').innerText = JSON.stringify(result, null, 2);
         });
 
-        // 결과를 화면에 출력하는 함수
-        function logToScreen(message) {
-            const logsDiv = document.getElementById('logs');
-            logsDiv.innerText += message + '\n';
+        // 버튼을 통해 각 함수 테스트
+        function testFunction(func, args, name) {
+            const result = func(...args);
+            displayResult(`${name}: ${JSON.stringify(result)}`);
         }
 
-        // 함수 테스트
-        logToScreen('splitStringIntoList: ' + JSON.stringify(splitStringIntoList("A0B1C2"))); // ['A0', 'B1', 'C2']
-        logToScreen('decodeInSequence: ' + JSON.stringify(decodeInSequence([160, 177, 194]))); // 디코드 결과
-        logToScreen('handleOnly0to9Xor: ' + handleOnly0to9Xor(160, patternToXorbit[0])); // 특정 값 테스트
+        // 각 함수에 대한 버튼 생성
+        const testFunctions = [
+            { func: splitStringIntoList, args: ["A0B1C2"], name: "splitStringIntoList" },
+            { func: decodeInSequence, args: [[160, 177, 194]], name: "decodeInSequence" },
+            { func: handleOnly0to9Xor, args: [160, patternToXorbit[0]], name: "handleOnly0to9Xor" },
+        ];
+
+        testFunctions.forEach(({ func, args, name }) => {
+            const button = document.createElement('button');
+            button.innerText = `${name} 테스트`;
+            button.addEventListener('click', () => testFunction(func, args, name));
+            document.body.appendChild(button);
+        });
 
     </script>
 </body>
