@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hex String Decoder</title>
-    <script>
-        // XOR 연산을 수행하는 함수
-        function handleOnly0to9Xor(color, pattern) {
-            return (color ^ pattern) % 10; // XOR 후 0-9 범위로 제한
-        }
+    <title>Decode Test</title>
+</head>
+<body>
+    <h1>Decode In Sequence Test</h1>
+    <input type="text" id="encodedInput" placeholder="인코딩된 값 입력 (예: 1, 2, 3)">
+    <button id="decodeButton">디코드하기</button>
+    <h2>결과:</h2>
+    <pre id="result"></pre>
 
-        // 주어진 패턴 정의
-        const patternToXorbit = {
+    <script>
+        const pattern_to_xorbit = {
             "0": 0b1010,
             "1": 0b0101,
             "2": 0b1111,
@@ -22,37 +24,34 @@
             "7": 0b0001,
         };
 
-        // 16진수 문자열을 정수 리스트로 변환하는 함수
-        function splitStringIntoList(string) {
-            const result = [];
-            for (let i = 0; i < string.length; i += 2) {
-                const hexPair = string.slice(i, i + 2);
-                result.push(parseInt(hexPair, 16));
-            }
-            return result;
+        function bit_xor(a, b) {
+            return a ^ b;
         }
 
-        // 주어진 색상 리스트를 디코딩하는 함수
-        function decodeInSequence(encodedLst) {
-            return encodedLst.map((color, idx) => {
-                return handleOnly0to9Xor(color, patternToXorbit[(idx % 8).toString()]);
+        function handle_only_0to9_xor(value, xor_bit) {
+            let result = value - 65;
+            let counter = 0;
+            while (bit_xor(result, xor_bit) > 9) {
+                result -= 16;
+                counter++;
+                if (result < 0) {
+                    return null;
+                }
+            }
+            return bit_xor(result, xor_bit) + counter * 9;
+        }
+
+        function decode_in_sequence(encoded_lst) {
+            return encoded_lst.map((color, idx) => {
+                return handle_only_0to9_xor(Number(color), pattern_to_xorbit[(idx % 8).toString()]);
             });
         }
 
-        // 입력을 처리하고 결과를 출력하는 함수
-        function processInput() {
-            const input = document.getElementById("input").value;
-            const encodedLst = splitStringIntoList(input);
-            const result = decodeInSequence(encodedLst);
-            document.getElementById("output").innerText = JSON.stringify(result, null, 2);
-        }
+        document.getElementById('decodeButton').addEventListener('click', () => {
+            const input = document.getElementById('encodedInput').value.split(',').map(s => s.trim());
+            const result = decode_in_sequence(input);
+            document.getElementById('result').textContent = JSON.stringify(result);
+        });
     </script>
-</head>
-<body>
-    <h1>Hex String Decoder</h1>
-    <textarea id="input" rows="4" cols="30" placeholder="예: 1A2B3C"></textarea><br>
-    <button onclick="processInput()">제출</button>
-    <h2>결과:</h2>
-    <pre id="output"></pre>
 </body>
 </html>
