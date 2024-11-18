@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Dictionary</title>
+    <title>Hex String Splitter</title>
     <script>
-        function toColorDict() {
+        function splitStringIntoList() {
             const input = document.getElementById("input").value;
-            const rows = input.split("\n");
-            const result = {};
+            const result = [];
 
-            for (const row of rows) {
-                const elements = row.split(",").map(Number);
-                if (elements.length > 1) {
-                    result[elements[0]] = elements.slice(1);
-                }
+            for (let i = 0; i < input.length; i += 2) {
+                const hexPair = input.slice(i, i + 2);
+                result.push(parseInt(hexPair, 16));
             }
 
             document.getElementById("output").innerText = JSON.stringify(result, null, 2);
@@ -22,9 +19,9 @@
     </script>
 </head>
 <body>
-    <h1>Color Dictionary 생성기</h1>
-    <textarea id="input" rows="10" cols="30" placeholder="예: 1,2,3&#10;4,5,6&#10;7,8,9"></textarea><br>
-    <button onclick="toColorDict()">제출</button>
+    <h1>Hex String Splitter</h1>
+    <textarea id="input" rows="4" cols="30" placeholder="예: 1A2B3C"></textarea><br>
+    <button onclick="splitStringIntoList()">제출</button>
     <h2>결과:</h2>
     <pre id="output"></pre>
 </body>
