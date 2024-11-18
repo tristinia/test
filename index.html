@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decode Test</title>
+    <title>Hex Decoder</title>
 </head>
 <body>
-    <h1>Decode In Sequence Test</h1>
-    <input type="text" id="encodedInput" placeholder="인코딩된 값 입력 (예: 1, 2, 3)">
+    <h1>16진수 문자열 디코더</h1>
+    <input type="text" id="hexInput" placeholder="16진수 문자열 입력">
     <button id="decodeButton">디코드하기</button>
     <h2>결과:</h2>
     <pre id="result"></pre>
@@ -41,15 +41,20 @@
             return bit_xor(result, xor_bit) + counter * 9;
         }
 
+        function split_string_into_list(string) {
+            return Array.from(string.matchAll(/.{1,2}/g)).map(match => parseInt(match[0], 16));
+        }
+
         function decode_in_sequence(encoded_lst) {
             return encoded_lst.map((color, idx) => {
-                return handle_only_0to9_xor(Number(color), pattern_to_xorbit[(idx % 8).toString()]);
+                return handle_only_0to9_xor(color, pattern_to_xorbit[(idx % 8).toString()]);
             });
         }
 
         document.getElementById('decodeButton').addEventListener('click', () => {
-            const input = document.getElementById('encodedInput').value.split(',').map(s => s.trim());
-            const result = decode_in_sequence(input);
+            const hexString = document.getElementById('hexInput').value;
+            const encodedList = split_string_into_list(hexString);
+            const result = decode_in_sequence(encodedList);
             document.getElementById('result').textContent = JSON.stringify(result);
         });
     </script>
